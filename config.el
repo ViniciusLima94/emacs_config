@@ -86,35 +86,67 @@
   (map! :leader :desc "Blacken Statement" "m b s" #'python-black-statement)
   )
 
-(setq ein:jupyter-default-server-command "/home/vinicius/anaconda3/envs/test_env/bin/jupyter")
+;;/opt/anaconda3/bin/anaconda
+;;(setq ein:jupyter-default-server-command "/anaconda3/envs/test_env/bin/jupyter")
 
 (setq fancy-splash-image (concat doom-private-dir "splash.png"))
 
+;; Unbind workspace switching that hijacks Option+Shift+5
+(map! "M-5" nil)
+(map! "s-5" nil)
+(map! "S-M-5" nil)
+
+;; macOS: stop using Option as a modifier so symbols work normally
+(setq mac-option-modifier 'none)
+(setq mac-command-modifier 'meta) ;; optional
+
+
+
 ;; Activate conda env
 ;; Path to your conda installation
-(setq conda-anaconda-home "/home/vinicius/anaconda3/condabin/conda")  ;; adjust path
+(setq conda-anaconda-home "/opt/anaconda3/bin/anaconda")  ;; adjust path
 
 ;; Set the default env
-(setq conda-env-home-directory "/home/vinicius/anaconda3/condabin/conda/")  ;; adjust path
+(setq conda-env-home-directory "/opt/anaconda3/envs/test_env")  ;; adjust path
 (conda-env-initialize-interactive-shells)
 (conda-env-initialize-eshell)
 (conda-env-autoactivate-mode t)
 
 ;; Activate a specific env by default
-(conda-env-activate "test_env")
+;;(conda-env-activate "basic")
 
 ;; Add known Projectile projects
 (after! projectile
-  (projectile-add-known-project "~/Documentos/phase_coupling_analysis/")
-  (projectile-add-known-project "~/Documentos/phase_amplitude_encoding/")
+  (projectile-add-known-project "~/projects/phase_coupling_analysis/")
+  (projectile-add-known-project "~/projects/plot_phase_coupling_analysis/")
+  (projectile-add-known-project "~/projects/phase_amplitude_encoding/")
   (projectile-add-known-project "~/projects/Hopf-Model-for-Syn-Red/")
-  (projectile-add-known-project "~/Documentos/Project-Euler/"))
+  (projectile-add-known-project "~/projects/Project-Euler/"))
 
 (global-set-key (kbd "M-s-<left>")  'windmove-left)
 (global-set-key (kbd "M-s-<right>") 'windmove-right)
 (global-set-key (kbd "M-s-<up>")    'windmove-up)
 (global-set-key (kbd "M-s-<down>")  'windmove-down)
 
+
+
+(defun my/square-brackets ()
+  "Append a semicolon to the end of the current line and return to normal mode."
+  (interactive)
+  (insert "[]")
+  (evil-normal-state))  ;; ensure we drop back into normal mode
+
+(map! :leader
+      "sq" #'my/square-brackets)
+
+(defun my/curly-brackets ()
+  "Append a semicolon to the end of the current line and return to normal mode."
+  (interactive)
+  (insert "{}")
+  (evil-normal-state))  ;; ensure we drop back into normal mode
+
+(map! :leader
+      "cb" #'my/curly-brackets)
 
 (defun my/append-semicolon ()
   "Append a semicolon to the end of the current line and return to normal mode."
@@ -144,3 +176,43 @@
  '((lua . t)
    (typescript . t) ;; since you’re also running TS
    ))
+
+
+(use-package! buffer-move
+  :commands (buf-move-up buf-move-down buf-move-left buf-move-right))
+
+(map! :leader
+      :desc "Move buffer left"  "w <left>"  #'buf-move-left
+      :desc "Move buffer right" "w <right>" #'buf-move-right
+      :desc "Move buffer up"    "w <up>"    #'buf-move-up
+      :desc "Move buffer down"  "w <down>"  #'buf-move-down)
+
+;; LSP Mode
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook ((python-mode . lsp-deferred)
+         (js-mode . lsp-deferred)
+         (typescript-mode . lsp-deferred)
+         (rust-mode . lsp-deferred))
+  :config
+  (setq lsp-enable-snippet t)
+  (setq lsp-prefer-capf t)) ;; prefer completion-at-point-functions for corfu
+
+;; LSP UI (for docs, hover, etc.)
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :after lsp-mode
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-sideline-enable t))
+
+;; CORFU for autocompletion UI
+(use-package corfu
+  :init
+  (global-corfu-mode))
+
+;; Yasnippet for snippets
+(use-package yasnippet
+  :init
+  (yas-global-mode 1))

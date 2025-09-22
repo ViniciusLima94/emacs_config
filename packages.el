@@ -55,3 +55,5 @@
 (package! lua-mode)
 (package! leetcode)
 (package! basic-mode)
+(package! buffer-move)
+(package! auto-complete)
